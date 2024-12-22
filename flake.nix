@@ -1,11 +1,22 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    ags.url = "github:aylur/ags";
-    astal.url = "github:aylur/astal";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    ags = {
+      url = "github:aylur/ags";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    astal = {
+      url = "github:aylur/astal";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, ags, astal }: let
+  outputs = {
+    self,
+    nixpkgs,
+    ags,
+    astal,
+  }: let
     systems = [
       "x86_64-linux"
       "x86_64-darwin"
@@ -17,13 +28,13 @@
     packages = forEachSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
     in {
-      default = ags.lib.bundle {
+      hyprpanel = ags.lib.bundle {
         inherit pkgs;
-        src = ./.;
-        name = "hyprpanel"; # name of executable
+        src = self;
+        name = "hyprpanel";
         entry = "app.ts";
 
-        # additional libraries and executables to add to gjs' runtime
+        # Additional libraries and executables to add to the GJS runtime
         extraPackages = [
           ags.packages.${system}.agsFull
           astal.packages.${system}.tray
@@ -52,11 +63,12 @@
           pkgs.gpu-screen-recorder
           pkgs.brightnessctl
           pkgs.gnome-bluetooth
-          (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
-            gpustat
-            dbus-python
-            pygobject3
-          ]))
+          (pkgs.python3.withPackages (python-pkgs:
+            with python-pkgs; [
+              gpustat
+              dbus-python
+              pygobject3
+            ]))
           pkgs.matugen
           pkgs.hyprpicker
           pkgs.hyprsunset
@@ -70,10 +82,5 @@
         ];
       };
     });
-
-    # Define .overlay to expose the package as pkgs.hyprpanel based on the system
-    overlay = final: prev: {
-      hyprpanel = self.packages.${prev.stdenv.system}.default;
-    };
   };
 }
