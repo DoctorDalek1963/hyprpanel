@@ -99,5 +99,16 @@
         extraPackages = mkExtraPackages system pkgs;
       };
     });
+
+    # Define .overlay to expose the package as pkgs.hyprpanel based on the system
+    overlay = final: prev: {
+      hyprpanel = prev.writeShellScriptBin "hyprpanel" ''
+        if [ "$#" -eq 0 ]; then
+            exec ${self.packages.${final.stdenv.system}.default}/bin/hyprpanel
+        else
+            exec ${astal.packages.${final.stdenv.system}.io}/bin/astal -i hyprpanel "$@"
+        fi
+      '';
+    };
   };
 }
