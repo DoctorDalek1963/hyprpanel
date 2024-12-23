@@ -86,7 +86,9 @@
 
     packages = forEachSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
-    in {
+    in rec {
+      default = hyprpanel;
+
       hyprpanel = ags.lib.bundle {
         inherit pkgs;
         src = self;

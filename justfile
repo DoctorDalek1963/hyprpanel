@@ -10,4 +10,4 @@ run:
 
 # build the default bar
 build:
-	nom build {{justfile_directory()}}#hyprpanel
+	nom build {{justfile_directory()}}
