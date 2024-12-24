@@ -89,7 +89,7 @@
     in rec {
       default = hyprpanel;
 
-      hyprpanel = ags.lib.bundle {
+      hyprpanel-ags = ags.lib.bundle {
         inherit pkgs;
         src = self;
         name = "hyprpanel";
@@ -98,17 +98,19 @@
         # Additional libraries and executables to add to the GJS runtime
         extraPackages = mkExtraPackages system pkgs;
       };
+
+      hyprpanel = pkgs.writeShellScriptBin "hyprpanel" ''
+        if [ "$#" -eq 0 ]; then
+            exec ${hyprpanel-ags}/bin/hyprpanel
+        else
+            exec ${astal.packages.${system}.io}/bin/astal -i hyprpanel "$@"
+        fi
+      '';
     });
 
     # Define .overlay to expose the package as pkgs.hyprpanel based on the system
-    overlay = final: prev: {
-      hyprpanel = prev.writeShellScriptBin "hyprpanel" ''
-        if [ "$#" -eq 0 ]; then
-            exec ${self.packages.${final.stdenv.system}.default}/bin/hyprpanel
-        else
-            exec ${astal.packages.${final.stdenv.system}.io}/bin/astal -i hyprpanel "$@"
-        fi
-      '';
+    overlay = final: _prev: {
+      inherit (self.packages.${final.stdenv.system}) hyprpanel;
     };
   };
 }
